@@ -7,7 +7,7 @@
     - name: build
       image: golang:1.13.5
       commands:
-      - go build --buildmode=plugin -o dist/plugin.so plugin.go
+      - go build --buildmode=plugin -o dist/realtime_multiplayer_plugin.so plugin.go
 
     - name: publish
       image: plugins/github-release
