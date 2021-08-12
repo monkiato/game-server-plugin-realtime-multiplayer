@@ -1,0 +1,29 @@
+namespace multiplayer;
+
+table CreateMatchInfo {
+}
+
+table MatchInfo {
+    match_id:uint;
+}
+
+table MatchResponse {
+    response_id:uint;
+    match_info:MatchInfo;
+    players:[PlayerInfo];
+}
+
+table LeaveMatchResponse {
+    status:bool;
+}
+
+table PlayerInfo {
+    player_id:uint;
+    display_name:string;
+}
+
+rpc_service MultiplayerConnection {
+    CreateMatch(CreateMatchInfo):MatchResponse;
+    JoinMatch(MatchInfo):MatchResponse;
+    LeaveMatch(MatchInfo):LeaveMatchResponse;
+}
