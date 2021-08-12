@@ -7,18 +7,12 @@
     - name: build
       image: golang:1.13.5
       commands:
-      - go build  --buildmode=plugin plugin.go
+      - go build --buildmode=plugin -o dist/plugin.so plugin.go
 
     - name: publish
-      image: plugins/docker
+      image: plugins/github-release
       settings:
-        repo: ghcr.io/monkiato/game-server-plugin-realtime-multiplayer
-        registry: ghcr.io
-        tags: ${DRONE_TAG}
-        username:
-          from_secret: docker_username
-        password:
-          from_secret: docker_password
+        files: dist/*
       when:
         event:
           - tag
