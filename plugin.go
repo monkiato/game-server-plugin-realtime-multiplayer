@@ -3,26 +3,28 @@ package main
 import (
 	"context"
 	flatbuffers "github.com/google/flatbuffers/go"
-	"github.com/monkiato/game-server-plugin-realtime-multiplayer/internal/game"
-	"github.com/monkiato/game-server-plugin-realtime-multiplayer/multiplayer"
 	"github.com/monkiato/game-server-core/pkg/framework"
+	"github.com/monkiato/game-server-plugin-realtime-multiplayer/internal/game"
+	"github.com/monkiato/game-server-plugin-realtime-multiplayer/internal/model"
+	"github.com/monkiato/game-server-plugin-realtime-multiplayer/multiplayer"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log"
 )
 
-type AbstractCoreServer struct {
-
+type BaseServer struct {
+	ServerManager *framework.ServerManager
 }
 
 type MultiplayerConnectionServer struct {
 	multiplayer.UnimplementedMultiplayerConnectionServer
-	AbstractCoreServer
+	BaseServer
+	plugin *ClientAuthoritativeRealtimeMultiplayerPlugin
 }
 
 type ClientAuthoritativeRealtimeMultiplayerPlugin struct {
-	matches []*game.Match
+	matches map[uint]*game.MatchRegistry
 }
 
 func Create() framework.Plugin {
@@ -37,24 +39,46 @@ func (p *ClientAuthoritativeRealtimeMultiplayerPlugin) OnLoad() error {
 	logrus.Debug("on load")
 	//TODO: create a loop to control player sessions
 
-	p.matches = []*game.Match{}
+	p.matches = map[uint]*game.MatchRegistry{}
 
 	return nil
 }
 
 func (p *ClientAuthoritativeRealtimeMultiplayerPlugin) Initialize(serverManager *framework.ServerManager) error {
+	log.Println("automigrate DB tables...")
+	serverManager.DB.AutoMigrate(&model.Match{})
+	serverManager.DB.AutoMigrate(&model.MatchPlayer{})
+	serverManager.DB.AutoMigrate(&model.Player{})
+
 	multiplayerConnectionServer := MultiplayerConnectionServer {
+		BaseServer: BaseServer{
+			ServerManager: serverManager,
+		},
+		plugin: p,
 	}
+
+	log.Println("register grpc server...")
 	multiplayer.RegisterMultiplayerConnectionServer(serverManager.GrpcModule.Server, multiplayerConnectionServer)
 	return nil
 }
 
-func (mp MultiplayerConnectionServer) CreateMatch(context.Context, *multiplayer.CreateMatchInfo) (*flatbuffers.Builder, error) {
+func (mp MultiplayerConnectionServer) CreateMatch(_ context.Context, matchInfo *multiplayer.CreateMatchInfo) (*flatbuffers.Builder, error) {
 	log.Println("CreateMatch called...")
+
+	playerId := string(matchInfo.PlayerId())
+
+	newMatch, err := game.CreateMatch(mp.ServerManager.DB, playerId, &game.MatchInfo{Capacity:2, Visibility:0})
+	if err != nil {
+		logrus.Errorf(err.Error())
+		return nil, err
+	}
+
+	//load match registry in memory, required for broadcast messages
+	mp.plugin.matches[newMatch.ID] = game.NewMatchRegistry(newMatch.ID)
 
 	b := flatbuffers.NewBuilder(0)
 	multiplayer.MatchInfoStart(b)
-	multiplayer.MatchInfoAddMatchId(b, 23)
+	multiplayer.MatchInfoAddMatchId(b, uint32(newMatch.ID))
 	matchInfoOffset := multiplayer.MatchInfoEnd(b)
 	multiplayer.MatchResponseStart(b)
 	multiplayer.MatchResponseAddMatchInfo(b, matchInfoOffset)

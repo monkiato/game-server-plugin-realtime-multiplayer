@@ -1,6 +1,7 @@
 namespace multiplayer;
 
 table CreateMatchInfo {
+    player_id:string;
 }
 
 table MatchInfo {

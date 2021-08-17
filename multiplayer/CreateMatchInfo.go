@@ -33,8 +33,19 @@ func (rcv *CreateMatchInfo) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
+func (rcv *CreateMatchInfo) PlayerId() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
 func CreateMatchInfoStart(builder *flatbuffers.Builder) {
-	builder.StartObject(0)
+	builder.StartObject(1)
+}
+func CreateMatchInfoAddPlayerId(builder *flatbuffers.Builder, playerId flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(playerId), 0)
 }
 func CreateMatchInfoEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

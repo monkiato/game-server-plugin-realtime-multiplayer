@@ -11,14 +11,11 @@ import (
 func TestCreateMatch(t *testing.T) {
 	testCases := []struct {
 		name string
-		req *multiplayer.CreateMatchInfo
 		message string
 		expectedError bool
 	} {
 		{
 			name: "req ok",
-			req: &multiplayer.CreateMatchInfo{
-			},
 		},
 	}
 
@@ -34,7 +31,9 @@ func TestCreateMatch(t *testing.T) {
 			client := multiplayer.NewMultiplayerConnectionClient(conn)
 
 			b := flatbuffers.NewBuilder(0)
+			playerIdOffset := b.CreateString("player123")
 			multiplayer.CreateMatchInfoStart(b)
+			multiplayer.CreateMatchInfoAddPlayerId(b, playerIdOffset)
 			b.Finish(multiplayer.CreateMatchInfoEnd(b))
 
 			resp, err := client.CreateMatch(context.Background(), b)
