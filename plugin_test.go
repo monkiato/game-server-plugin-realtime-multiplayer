@@ -31,10 +31,13 @@ func TestCreateMatch(t *testing.T) {
 			client := multiplayer.NewMultiplayerConnectionClient(conn)
 
 			b := flatbuffers.NewBuilder(0)
-			playerIdOffset := b.CreateString("player123")
-			multiplayer.CreateMatchInfoStart(b)
-			multiplayer.CreateMatchInfoAddPlayerId(b, playerIdOffset)
-			b.Finish(multiplayer.CreateMatchInfoEnd(b))
+			tokenOffset := b.CreateString("player123")
+			multiplayer.RequestPlayerInfoStart(b)
+			multiplayer.RequestPlayerInfoAddToken(b, tokenOffset)
+			playerInfoOffset := multiplayer.RequestPlayerInfoEnd(b)
+			multiplayer.MatchRequestStart(b)
+			multiplayer.MatchRequestAddRequestPlayer(b, playerInfoOffset)
+			b.Finish(multiplayer.MatchRequestEnd(b))
 
 			resp, err := client.CreateMatch(context.Background(), b)
 

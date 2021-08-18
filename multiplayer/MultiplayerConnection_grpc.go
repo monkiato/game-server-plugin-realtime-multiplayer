@@ -62,24 +62,24 @@ func (c *multiplayerConnectionClient) LeaveMatch(ctx context.Context, in *flatbu
 
 // Server API for MultiplayerConnection service
 type MultiplayerConnectionServer interface {
-	CreateMatch(context.Context, *CreateMatchInfo) (*flatbuffers.Builder, error)
-	JoinMatch(context.Context, *MatchInfo) (*flatbuffers.Builder, error)
-	LeaveMatch(context.Context, *MatchInfo) (*flatbuffers.Builder, error)
+	CreateMatch(context.Context, *MatchRequest) (*flatbuffers.Builder, error)
+	JoinMatch(context.Context, *MatchRequest) (*flatbuffers.Builder, error)
+	LeaveMatch(context.Context, *MatchRequest) (*flatbuffers.Builder, error)
 	mustEmbedUnimplementedMultiplayerConnectionServer()
 }
 
 type UnimplementedMultiplayerConnectionServer struct {
 }
 
-func (UnimplementedMultiplayerConnectionServer) CreateMatch(context.Context, *CreateMatchInfo) (*flatbuffers.Builder, error) {
+func (UnimplementedMultiplayerConnectionServer) CreateMatch(context.Context, *MatchRequest) (*flatbuffers.Builder, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateMatch not implemented")
 }
 
-func (UnimplementedMultiplayerConnectionServer) JoinMatch(context.Context, *MatchInfo) (*flatbuffers.Builder, error) {
+func (UnimplementedMultiplayerConnectionServer) JoinMatch(context.Context, *MatchRequest) (*flatbuffers.Builder, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method JoinMatch not implemented")
 }
 
-func (UnimplementedMultiplayerConnectionServer) LeaveMatch(context.Context, *MatchInfo) (*flatbuffers.Builder, error) {
+func (UnimplementedMultiplayerConnectionServer) LeaveMatch(context.Context, *MatchRequest) (*flatbuffers.Builder, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LeaveMatch not implemented")
 }
 
@@ -95,7 +95,7 @@ func RegisterMultiplayerConnectionServer(s grpc.ServiceRegistrar, srv Multiplaye
 
 func _MultiplayerConnection_CreateMatch_Handler(srv interface{}, ctx context.Context,
 	dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateMatchInfo)
+	in := new(MatchRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -108,13 +108,13 @@ func _MultiplayerConnection_CreateMatch_Handler(srv interface{}, ctx context.Con
 	}
 
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultiplayerConnectionServer).CreateMatch(ctx, req.(*CreateMatchInfo))
+		return srv.(MultiplayerConnectionServer).CreateMatch(ctx, req.(*MatchRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 func _MultiplayerConnection_JoinMatch_Handler(srv interface{}, ctx context.Context,
 	dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MatchInfo)
+	in := new(MatchRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -127,13 +127,13 @@ func _MultiplayerConnection_JoinMatch_Handler(srv interface{}, ctx context.Conte
 	}
 
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultiplayerConnectionServer).JoinMatch(ctx, req.(*MatchInfo))
+		return srv.(MultiplayerConnectionServer).JoinMatch(ctx, req.(*MatchRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 func _MultiplayerConnection_LeaveMatch_Handler(srv interface{}, ctx context.Context,
 	dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MatchInfo)
+	in := new(MatchRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ func _MultiplayerConnection_LeaveMatch_Handler(srv interface{}, ctx context.Cont
 	}
 
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultiplayerConnectionServer).LeaveMatch(ctx, req.(*MatchInfo))
+		return srv.(MultiplayerConnectionServer).LeaveMatch(ctx, req.(*MatchRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

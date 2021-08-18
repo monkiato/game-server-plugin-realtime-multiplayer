@@ -62,12 +62,12 @@ func (p *ClientAuthoritativeRealtimeMultiplayerPlugin) Initialize(serverManager 
 	return nil
 }
 
-func (mp MultiplayerConnectionServer) CreateMatch(_ context.Context, matchInfo *multiplayer.CreateMatchInfo) (*flatbuffers.Builder, error) {
+func (mp MultiplayerConnectionServer) CreateMatch(_ context.Context, request *multiplayer.MatchRequest) (*flatbuffers.Builder, error) {
 	log.Println("CreateMatch called...")
 
-	playerId := string(matchInfo.PlayerId())
+	playerToken := string(request.RequestPlayer(nil).Token())
 
-	newMatch, err := game.CreateMatch(mp.ServerManager.DB, playerId, &game.MatchInfo{Capacity:2, Visibility:0})
+	newMatch, err := game.CreateMatch(mp.ServerManager.DB, playerToken, &game.MatchInfo{Capacity:2, Visibility:0})
 	if err != nil {
 		logrus.Errorf(err.Error())
 		return nil, err
@@ -76,20 +76,25 @@ func (mp MultiplayerConnectionServer) CreateMatch(_ context.Context, matchInfo *
 	//load match registry in memory, required for broadcast messages
 	mp.plugin.matches[newMatch.ID] = game.NewMatchRegistry(newMatch.ID)
 
+	b := CreateMatchInfoBuilder(newMatch.ID)
+	return b, nil
+}
+
+func (mp MultiplayerConnectionServer) JoinMatch(context.Context, *multiplayer.MatchRequest) (*flatbuffers.Builder, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method JoinMatch not implemented")
+}
+
+func (mp MultiplayerConnectionServer) LeaveMatch(context.Context, *multiplayer.MatchRequest) (*flatbuffers.Builder, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LeaveMatch not implemented")
+}
+
+func CreateMatchInfoBuilder(matchId uint) *flatbuffers.Builder {
 	b := flatbuffers.NewBuilder(0)
 	multiplayer.MatchInfoStart(b)
-	multiplayer.MatchInfoAddMatchId(b, uint32(newMatch.ID))
+	multiplayer.MatchInfoAddMatchId(b, uint32(matchId))
 	matchInfoOffset := multiplayer.MatchInfoEnd(b)
 	multiplayer.MatchResponseStart(b)
 	multiplayer.MatchResponseAddMatchInfo(b, matchInfoOffset)
 	b.Finish(multiplayer.MatchResponseEnd(b))
-	return b, nil
-}
-
-func (mp MultiplayerConnectionServer) JoinMatch(context.Context, *multiplayer.MatchInfo) (*flatbuffers.Builder, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method JoinMatch not implemented")
-}
-
-func (mp MultiplayerConnectionServer) LeaveMatch(context.Context, *multiplayer.MatchInfo) (*flatbuffers.Builder, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method LeaveMatch not implemented")
+	return b
 }

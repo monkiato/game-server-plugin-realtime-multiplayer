@@ -1,9 +1,5 @@
 namespace multiplayer;
 
-table CreateMatchInfo {
-    player_id:string;
-}
-
 table MatchInfo {
     match_id:uint;
 }
@@ -23,8 +19,18 @@ table PlayerInfo {
     display_name:string;
 }
 
+// token must be obtained from a previously login process
+table RequestPlayerInfo {
+    token:string;
+}
+
+table MatchRequest {
+    request_player:RequestPlayerInfo;
+    match:MatchInfo;
+}
+
 rpc_service MultiplayerConnection {
-    CreateMatch(CreateMatchInfo):MatchResponse;
-    JoinMatch(MatchInfo):MatchResponse;
-    LeaveMatch(MatchInfo):LeaveMatchResponse;
+    CreateMatch(MatchRequest):MatchResponse;
+    JoinMatch(MatchRequest):MatchResponse;
+    LeaveMatch(MatchRequest):LeaveMatchResponse;
 }

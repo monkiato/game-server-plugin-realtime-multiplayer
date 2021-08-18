@@ -5,6 +5,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/monkiato/game-server-plugin-realtime-multiplayer/internal/model"
 	"github.com/sirupsen/logrus"
+	"time"
 )
 
 type PlayerConnection struct {
@@ -28,13 +29,25 @@ type MatchInfo struct {
 	Visibility uint
 }
 
-func CreateMatch(db *gorm.DB, playerId string, matchInfo *MatchInfo) (*model.Match, error) {
+func CreateMatch(db *gorm.DB, playerToken string, matchInfo *MatchInfo) (*model.Match, error) {
+
+	//TODO: implement WHERE token = {playerToken}, but we need a credential/user-login plugin first for identity related stuff
 	//fetch player data from DB
-	var player model.Player
-	if err := db.First(&player, playerId).Error; err != nil {
-		returnError := fmt.Errorf("unable to find player %s", playerId)
-		logrus.Errorf("%s\n%v", returnError.Error(), err.Error())
-		return nil, returnError
+	//var player model.Player
+	//if err := db.First(&player, playerId).Error; err != nil {
+	//	returnError := fmt.Errorf("unable to find player %s", playerId)
+	//	logrus.Errorf("%s\n%v", returnError.Error(), err.Error())
+	//	return nil, returnError
+	//}
+
+	//TODO: remove, this is a hardcoded user
+	player := &model.Player{
+		Model: gorm.Model{
+			ID:        1234,
+			CreatedAt: time.Time{},
+			UpdatedAt: time.Time{},
+			DeletedAt: nil,
+		},
 	}
 
 	newMatch := &model.Match{

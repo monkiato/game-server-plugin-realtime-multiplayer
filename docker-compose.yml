@@ -3,12 +3,12 @@ version: "3.7"
 services:
   game-server:
     build: .
+    ports:
+      - 5000:5000
+      - 8000:8000
 
   db:
     image: postgres
-    ports:
-    - 5000:5000
-    - 8000:8000
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres

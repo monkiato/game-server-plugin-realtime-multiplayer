@@ -26,3 +26,11 @@ type MatchPlayer struct {
 	PlayerID uint
 	Player Player
 }
+
+//TODO: move to a crendential-related plugin (many plugins can use a user login system to identify the user and prevent identity hacking)
+type PlayerToken struct {
+	gorm.Model
+	PlayerID uint
+	Token string
+	ExpirationTime time.Time
+}
